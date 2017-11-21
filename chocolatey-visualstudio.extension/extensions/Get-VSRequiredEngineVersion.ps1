@@ -16,7 +16,7 @@ function Get-VSRequiredEngineVersion
     if ($manifest -is [Collections.IDictionary] -and $manifest.ContainsKey('engineVersion'))
     {
         $engineVersionString = $manifest['engineVersion']
-        if ($channelItems -is [string])
+        if ($engineVersionString -is [string])
         {
             $engineVersion = [version]$engineVersionString
         }

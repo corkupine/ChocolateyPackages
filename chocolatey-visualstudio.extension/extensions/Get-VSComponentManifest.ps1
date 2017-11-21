@@ -11,7 +11,7 @@ function Get-VSComponentManifest
     $channelManifest = Get-VSChannelManifest -PackageParameters $PackageParameters -ProductReference $ProductReference
 
     Write-Debug 'Parsing the channel manifest'
-    $url, $checksum, $checksumType = Get-VSChannelManifestItemUrl -Manifest $manifest -ChannelItemType 'Manifest'
+    $url, $checksum, $checksumType = Get-VSChannelManifestItemUrl -Manifest $channelManifest -ChannelItemType 'Manifest'
 
     if ($url -eq $null)
     {
@@ -21,7 +21,7 @@ function Get-VSComponentManifest
 
     # TODO: pass -LayoutPath
     # TODO: pass -Checksum and -ChecksumType
-    $catalogManifest = Get-VSManifest -Description 'catalog manifest' -Url $manifestUri -LayoutFileName 'Catalog.json'
+    $catalogManifest = Get-VSManifest -Description 'catalog manifest' -Url $url -LayoutFileName 'Catalog.json'
 
     return $catalogManifest
 }
