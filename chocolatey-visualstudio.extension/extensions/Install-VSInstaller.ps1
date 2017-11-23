@@ -188,7 +188,7 @@ function Install-VSInstaller
         {
             if ($RequiredEngineVersion -ne $null)
             {
-                if ($updated.Version -lt $RequiredEngineVersion)
+                if ($updated.EngineVersion -lt $RequiredEngineVersion)
                 {
                     Write-Warning "The Visual Studio Installer engine got updated to version $($updated.EngineVersion), which is still lower than the requirement of version $RequiredEngineVersion or later."
                 }
