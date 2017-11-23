@@ -12,7 +12,7 @@ function Get-VSRequiredInstallerVersion
     $channelManifest = Get-VSChannelManifest -PackageParameters $PackageParameters -ProductReference $ProductReference
 
     Write-Debug 'Parsing the channel manifest'
-    $version = null
+    $version = $null
     $channelItem = Get-VSChannelManifestItem -Manifest $channelManifest -ChannelItemType 'Bootstrapper'
     if ($channelItem -is [Collections.IDictionary] -and $channelItem.ContainsKey('version'))
     {
