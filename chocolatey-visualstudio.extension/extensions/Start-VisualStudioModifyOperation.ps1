@@ -8,7 +8,6 @@
         [Parameter(Mandatory = $true)] [string[]] $ApplicableProducts,
         [Parameter(Mandatory = $true)] [string[]] $OperationTexts,
         [ValidateSet('modify', 'uninstall', 'update')] [string] $Operation = 'modify',
-        [string] $InstallerPath,
         [version] $RequiredProductVersion,
         [hashtable] $PackageParameters,
         [string] $BootstrapperUrl,
@@ -19,17 +18,6 @@
     Write-Debug "Running 'Start-VisualStudioModifyOperation' with PackageName:'$PackageName' ArgumentList:'$ArgumentList' VisualStudioYear:'$VisualStudioYear' ApplicableProducts:'$ApplicableProducts' OperationTexts:'$OperationTexts' Operation:'$Operation' InstallerPath:'$InstallerPath' RequiredProductVersion:'$RequiredProductVersion' BootstrapperUrl:'$BootstrapperUrl' BootstrapperChecksum:'$BootstrapperChecksum' BootstrapperChecksumType:'$BootstrapperChecksumType'";
 
     $frobbed, $frobbing, $frobbage = $OperationTexts
-
-    if ($InstallerPath -eq '')
-    {
-        $installer = Get-VisualStudioInstaller
-        if ($installer -eq $null)
-        {
-            throw "Unable to determine the location of the Visual Studio Installer. Is Visual Studio $VisualStudioYear installed?"
-        }
-
-        $InstallerPath = $installer.Path
-    }
 
     if ($PackageParameters -eq $null)
     {
@@ -199,6 +187,18 @@
         }
     }
 
+    $shouldFixInstaller = $false
+    $installer = Get-VisualStudioInstaller
+    if ($installer -eq $null)
+    {
+        $shouldFixInstaller = $true
+    }
+    else
+    {
+        $health = $installer | Get-VisualStudioInstallerHealth
+        $shouldFixInstaller = -not $health.IsHealthy
+    }
+
     $installerUpdated = $false
     $overallExitCode = 0
     foreach ($argumentSet in $argumentSets)
@@ -219,7 +219,7 @@
             $argumentSet.Remove('__internal_productReference')
         }
 
-        if ($Operation -ne 'uninstall' -and -not $installerUpdated)
+        if ($shouldFixInstaller -or ($Operation -ne 'uninstall' -and -not $installerUpdated))
         {
             if ($PSCmdlet.ShouldProcess("Visual Studio Installer", "update"))
             {
@@ -229,14 +229,20 @@
                 $requiredVersionInfo = Get-VSRequiredInstallerVersion -PackageParameters $PackageParameters -ProductReference $thisProductReference
                 Install-VSInstaller -PackageName $PackageName -PackageParameters $PackageParameters -ProductReference $thisProductReference -Url $BootstrapperUrl -Checksum $BootstrapperChecksum -ChecksumType $BootstrapperChecksumType -RequiredInstallerVersion $requiredVersionInfo.Version -RequiredEngineVersion $requiredVersionInfo.EngineVersion
                 $installerUpdated = $true
+                $shouldFixInstaller = $false
+                $installer = Get-VisualStudioInstaller
+                if ($installer -eq $null)
+                {
+                    throw 'The Visual Studio Installer is not present even after an attempt to reinstall it. Unable to continue.'
+                }
             }
         }
 
         $silentArgs = ConvertTo-ArgumentString -InitialUnstructuredArguments @($Operation) -Arguments $argumentSet -Syntax 'Willow'
         $exitCode = -1
-        if ($PSCmdlet.ShouldProcess("Executable: $InstallerPath", "Start with arguments: $silentArgs"))
+        if ($PSCmdlet.ShouldProcess("Executable: $($installer.Path)", "Start with arguments: $silentArgs"))
         {
-            $exitCode = Start-VSChocolateyProcessAsAdmin -statements $silentArgs -exeToRun $InstallerPath -validExitCodes @(0, 3010)
+            $exitCode = Start-VSChocolateyProcessAsAdmin -statements $silentArgs -exeToRun $installer.Path -validExitCodes @(0, 3010)
         }
 
         if ($overallExitCode -eq 0)
