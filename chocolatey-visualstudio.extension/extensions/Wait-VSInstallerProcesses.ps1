@@ -19,7 +19,7 @@ function Wait-VSInstallerProcesses
         Write-Debug ('[{0:yyyyMMdd HH:mm:ss.fff}] Giving the processes some time to exit' -f (Get-Date))
         $lazyQuitterProcesses | Wait-Process -Timeout 1 -ErrorAction SilentlyContinue
         Write-Debug ('[{0:yyyyMMdd HH:mm:ss.fff}] Looking for still running VS installer processes' -f (Get-Date))
-   }
+    }
 
     # This sometimes happens when the VS installer is updated by the invoked bootstrapper.
     # The initial process exits, leaving another instance of the VS installer performing the actual install in the background.
