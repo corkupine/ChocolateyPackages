@@ -72,6 +72,7 @@ function Get-VSManifest
             {
                 if (Test-Path -Path $localFilePath)
                 {
+                    Write-Debug 'Download failed, removing the local file'
                     Remove-Item -Path $localFilePath -ErrorAction SilentlyContinue
                 }
 
