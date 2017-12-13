@@ -259,13 +259,13 @@
         }
 
         # if updating/modifying from layout, auto add --layoutPath
-        if (-not $packageParameters.ContainsKey('layoutPath'))
+        if (-not $argumentSet.ContainsKey('layoutPath'))
         {
-            $layoutPath = Resolve-VSLayoutPath -PackageParameters $PackageParameters
+            $layoutPath = Resolve-VSLayoutPath -PackageParameters $argumentSet
             if ($layoutPath -ne $null)
             {
                 Write-Debug "Using layout path: $layoutPath"
-                $packageParameters['layoutPath'] = $layoutPath
+                $argumentSet['layoutPath'] = $layoutPath
             }
         }
 
