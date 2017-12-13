@@ -258,7 +258,16 @@
             }
         }
 
-        # TODO: Resolve-VSLayoutPath and auto add --layoutPath
+        # if updating/modifying from layout, auto add --layoutPath
+        if (-not $packageParameters.ContainsKey('layoutPath'))
+        {
+            $layoutPath = Resolve-VSLayoutPath -PackageParameters $PackageParameters
+            if ($layoutPath -ne $null)
+            {
+                Write-Debug "Using layout path: $layoutPath"
+                $packageParameters['layoutPath'] = $layoutPath
+            }
+        }
 
         $blacklist = @('bootstrapperPath', 'installLayoutPath')
         $parametersToRemove = $argumentSet.Keys | Where-Object { $blacklist -contains $_ }
